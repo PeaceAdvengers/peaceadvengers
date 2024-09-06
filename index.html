@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tree with Apples</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #tree {
+            background-color: #8B4513; /* Basic brown color for the tree */
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            cursor: pointer;
+        }
+        .apple {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red; /* Basic color for the apple */
+            border-radius: 50%;
+        }
+        #appleCount {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="tree">
+        <div id="appleCount">Apples: 0</div>
+    </div>
+    <script>
+        let appleCount = 0;
+        let hasClicked = false;
+
+        function handleTreeClick(event) {
+            if (hasClicked) return;
+
+            hasClicked = true;
+
+            const apple = document.createElement('div');
+            apple.className = 'apple';
+
+            const tree = document.getElementById('tree');
+            const rect = tree.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            apple.style.left = `${x - 10}px`;
+            apple.style.top = `${y - 10}px`;
+
+            tree.appendChild(apple);
+
+            appleCount += 1;
+            document.getElementById('appleCount').innerText = `Apples: ${appleCount}`;
+        }
+
+        document.getElementById('tree').addEventListener('click', handleTreeClick);
+    </script>
+</body>
+</html>
