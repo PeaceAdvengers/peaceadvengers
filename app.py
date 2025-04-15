@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 df = pd.read_csv("water_consumption.csv")
 
 # Streamlit layout
-st.title("Clean Water Consumption Prediction")
+st.title("Clean Water Consumption Predictor")
 st.write("### 💧Water: the only drink that falls from the sky for free.")
 st.write("##### Every drop counts! Curious how much water we’ll use? Let’s find out together! ")
 
@@ -83,7 +83,7 @@ X_new = pd.DataFrame([input_dict])[model_features]
 predicted_proportion = model.predict(X_new)[0]
 
 
-st.success(f"💡 Predicted daily total consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_proportion:.2f} million litres**")
+st.success(f"💡 Predicted daily water consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_proportion:.2f} million litres**")
 
 # Plotting
 fig, ax = plt.subplots(figsize=(10, 6))
