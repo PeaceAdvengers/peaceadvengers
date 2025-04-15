@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# Sample data for water demand across different areas
-data = pd.read_csv(r"C:\Users\Vivian Yip\Downloads\water_consumption.csv")
+@st.cache_data
+def load_data():
+    return pd.read_csv(r"C:\Users\Vivian Yip\Downloads\water_consumption.csv")
+
+df = load_data()
 
 # Create a DataFrame
 df = pd.DataFrame(data)
@@ -34,16 +37,15 @@ st.write(filtered_df)
 # We'll assume 'data' (year) is the independent variable and 'value' is the dependent variable.
 # First, we need to encode the categorical variable (state) into numeric format.
 
-# Encoding categorical column 'state' into numeric using pd.get_dummies() for one-hot encoding
-df_encoded = pd.get_dummies(filtered_df, columns=['state', 'sector'], drop_first=True)
+@st.cache_resource
+def train_model(filtered_df):
+    df_encoded = pd.get_dummies(filtered_df, columns=['state', 'sector'], drop_first=True)
+    X = df_encoded[['date'] + [col for col in df_encoded.columns if col.startswith('state_')]]
+    y = df_encoded['value']
+    model = LinearRegression().fit(X, y)
+    return model, df_encoded, y
 
-# Now, apply Linear Regression
-X = df_encoded[['date'] + [col for col in df_encoded.columns if col.startswith('state_')]]  # Features (data + encoded states)
-y = df_encoded['value']  # Target
-
-# Fit the linear regression model
-model = LinearRegression()
-model.fit(X, y)
+model, df_encoded, y = train_model(filtered_df)
 
 selected_year = st.slider("Select a Year", min(df['date']), 2040, 2025)
 if selected_state:
