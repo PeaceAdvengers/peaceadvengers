@@ -4,12 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# Load and cache the data
-@st.cache_data
-def load_data():
-    return pd.read_csv(r"C:\Users\Vivian Yip\Downloads\water_consumption.csv")
-
-df = load_data()
+df = pd.read_csv("water_consumption.csv")
 
 # Streamlit layout
 st.title("💧Clean Water Consumption Prediction")
