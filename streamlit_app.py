@@ -4,82 +4,78 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+# Load and cache the data
 @st.cache_data
 def load_data():
     return pd.read_csv(r"C:\Users\Vivian Yip\Downloads\water_consumption.csv")
 
 df = load_data()
 
-# Create a DataFrame
-df = pd.DataFrame(data)
-
-# Streamlit app layout
+# Streamlit layout
 st.title("💧Clean Water Consumption Prediction")
-st.write("### Select Year and Area")
+st.write("### Select Year, State and Sector")
 
-# Let users select a year and area
-years = df['date'].unique()  # Get unique years from your 'data' column
-states = df['state'].unique()  # Get unique states from your 'state' column
-categories = df['sector'].unique()
+# Dropdown selections
+years = sorted(df['date'].unique())
+states = sorted(df['state'].unique())
+categories = sorted(df['sector'].unique())
 
-# Now, create the selectbox for state selection
-selected_state = st.selectbox("Select State", list(states), index=0)
-selected_category = st.selectbox("Select Sector", list(categories), index=0)
+selected_state = st.selectbox("Select State", states)
+selected_category = st.selectbox("Select Sector", categories)
 
-filtered_df = df
-if selected_state:
-    filtered_df = filtered_df[filtered_df['state'] == selected_state]
-if selected_category:
-    filtered_df = filtered_df[filtered_df['sector'] == selected_category]
-st.write(filtered_df)
+# Filter data
+filtered_df = df[
+    (df['state'] == selected_state) &
+    (df['sector'] == selected_category)
+]
 
-# Linear Regression
-# We'll assume 'data' (year) is the independent variable and 'value' is the dependent variable.
-# First, we need to encode the categorical variable (state) into numeric format.
+if filtered_df.empty:
+    st.warning("No data available for this combination. Please choose another state or sector.")
+    st.stop()
 
+st.write("Filtered Data", filtered_df)
+
+# Train Linear Regression model
 @st.cache_resource
-def train_model(filtered_df):
-    df_encoded = pd.get_dummies(filtered_df, columns=['state', 'sector'], drop_first=True)
-    X = df_encoded[['date'] + [col for col in df_encoded.columns if col.startswith('state_')]]
+def train_model(dataframe):
+    df_encoded = pd.get_dummies(dataframe, columns=['state', 'sector'], drop_first=True)
+    X = df_encoded[['date'] + [col for col in df_encoded.columns if col.startswith('state_') or col.startswith('sector_')]]
     y = df_encoded['value']
     model = LinearRegression().fit(X, y)
-    return model, df_encoded, y
+    return model, df_encoded, X.columns.tolist()
 
-model, df_encoded, y = train_model(filtered_df)
+model, df_encoded, model_features = train_model(filtered_df)
 
-selected_year = st.slider("Select a Year", min(df['date']), 2040, 2025)
-if selected_state:
-    selected_state_encoded = pd.get_dummies([selected_state], columns=states, drop_first=True)
-else:
-    selected_state_encoded = pd.DataFrame(np.zeros((1, len(states) - 1)), columns=[f"state_{s}" for s in states[1:]])
+# Year slider
+selected_year = st.slider("Select a Year", min_value=min(years), max_value=2040, value=2025)
 
-if selected_category:
-    selected_category_encoded = pd.get_dummies([selected_category], columns=categories, drop_first=True)
-else:
-    selected_category_encoded = pd.DataFrame(np.zeros((1, len(categories) - 1)), columns=[f"category_{c}" for c in categories[1:]])
+# Prepare input for prediction
+input_dict = {'date': selected_year}
+# Add dummy values for model's expected features
+for feature in model_features:
+    if feature.startswith("state_"):
+        input_dict[feature] = 1 if feature == f"state_{selected_state}" else 0
+    elif feature.startswith("sector_"):
+        input_dict[feature] = 1 if feature == f"sector_{selected_category}" else 0
 
-# Prepare the data for prediction
-X_new = np.array([[selected_year] + list(selected_state_encoded.iloc[0]) + list(selected_category_encoded.iloc[0])])
+# Fill missing features with 0
+for feature in model_features:
+    input_dict.setdefault(feature, 0)
 
-# Predict the proportion for the selected year, state, and category
+X_new = pd.DataFrame([input_dict])[model_features]
 predicted_proportion = model.predict(X_new)[0]
 
-# Display the predicted proportion
-st.write(f"Predicted total consumption for the year {selected_year}, state {selected_state}, and category {selected_category}: {predicted_proportion:.2f} millions ")
+st.success(f"💡 Predicted total consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_proportion:.2f} million**")
 
-# Plot the regression line and prediction
-plt.figure(figsize=(10, 6))
-plt.scatter(df_encoded['date'], y, color='blue', label='Actual Data')
+# Plotting
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.scatter(df_encoded['date'], df_encoded['value'], color='blue', label='Actual Data')
+y_pred = model.predict(df_encoded[model_features])
+ax.plot(df_encoded['date'], y_pred, color='red', label='Regression Line')
+ax.scatter(selected_year, predicted_proportion, color='green', label='Prediction', s=100, zorder=5)
 
-# Plot the regression line
-y_pred = model.predict(X)
-plt.plot(df_encoded['date'], y_pred, color='red', label='Regression Line')
-
-# Highlight the predicted point
-plt.scatter(selected_year, predicted_proportion, color='green', label=f"Prediction for {selected_year}", s=100, zorder=5)
-
-plt.xlabel('Year')
-plt.ylabel('value')
-plt.title('Linear Regression of Proportion vs. Year with State and Strata')
-plt.legend()
-st.pyplot(plt)
+ax.set_xlabel('Year')
+ax.set_ylabel('Water Consumption (million)')
+ax.set_title('Linear Regression: Water Consumption over Time')
+ax.legend()
+st.pyplot(fig)
