@@ -7,8 +7,9 @@ from sklearn.linear_model import LinearRegression
 df = pd.read_csv("water_consumption.csv")
 
 # Streamlit layout
-st.title("💧Clean Water Consumption Prediction")
-st.write("### Select Year, State and Sector")
+st.title("Clean Water Consumption Prediction")
+st.write("### 💧Water: the only drink that falls from the sky for free.")
+st.write("##### Every drop counts! Curious how much water we’ll use? Let’s find out together! ")
 
 # Dropdown selections
 years = sorted(df['date'].unique())
