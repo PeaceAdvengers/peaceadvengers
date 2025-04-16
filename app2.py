@@ -64,24 +64,37 @@ else:
 st.success(f"💡 Predicted daily water consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_value:.2f} million litres**")
 
 
-# Combined figure
-plt.figure(figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(10, 6))
 
-# --- First chart: Double Exponential Smoothing Forecast ---
-plt.subplot(1, 2, 1)
-plt.plot(train['Year'], train['Count'], label='Actual Data', color='blue')
-plt.plot([train['Year'].iloc[-1], train['Year'].iloc[-1] + 1],
-         [train['Count'].iloc[-1], forecast.values[0]],
-         label='Forecast', color='red')
-plt.scatter(train['Year'].iloc[-1] + 1, forecast.values[0], color='green', label='Prediction', s=100)
-plt.xlabel('Year')
-plt.ylabel('Water Consumption (million litres)')
-plt.title('Double Exponential Smoothing Forecast')
-plt.legend()
+# Plotting actual data
+ax.plot(filtered_df['date'], filtered_df['value'], label='Actual Data', color='blue', marker='o', linestyle='-', linewidth=2)
+
+# Plotting the forecast data
+forecast_range = list(range(int(last_year) + 1, selected_year + 1))
+if forecast_range:
+    forecast_vals = fit.forecast(len(forecast_range))
+    ax.plot(forecast_range, forecast_vals, label='Forecast', color='red', linestyle='--', linewidth=2)
+
+# Mark the prediction point
+ax.scatter(selected_year, predicted_value, color='green', label='Prediction', s=100, zorder=5)
+
+# Adding title and labels
+ax.set_xlabel('Year', fontsize=12)
+ax.set_ylabel('Water Consumption (million litres)', fontsize=12)
+ax.set_title('Double Exponential Smoothing Forecast', fontsize=14)
+
+# Adding grid for better readability
+ax.grid(True, linestyle='--', alpha=0.7)
+
+# Adding a legend
+ax.legend(loc='upper left', fontsize=12)
+
+# Display the plot
+st.pyplot(fig)
 
 # --- Second chart: Seasonal Decomposition ---
 plt.subplot(1, 2, 2)
-decompose_result = sm.tsa.seasonal_decompose(train['Count'], model='additive', period=1)  # Adjust period if needed
+decompose_result = sm.tsa.seasonal_decompose(train['value'], model='additive', period=1)  # Adjust period if needed
 decompose_result.plot()
 plt.title('Seasonal Decomposition of Water Consumption')
 
