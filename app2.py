@@ -40,15 +40,15 @@ filtered_df['date'] = pd.to_numeric(filtered_df['date'])
 
 # Fit Exponential Smoothing model
 @st.cache_resource
-# Double Exponential Smoothing Forecast
-model = ExponentialSmoothing(train['value'], trend='add', seasonal=None)
-fit = model.fit()
-forecast = fit.forecast(1)
+def fit_expo_model(data):
+    model = ExponentialSmoothing(data['value'], trend='add', seasonal=None)
+    fit = model.fit()
+    return fit
 
 fit = fit_expo_model(filtered_df)
 
 # Year slider
-selected_year = st.slider("Select Year", min_value=min(years), max_value=2040, value=2025)
+selected_year = st.slider("Select a Year", min_value=min(years), max_value=2040, value=2025)
 
 # Predict
 prediction_index = selected_year
@@ -63,7 +63,7 @@ else:
 
 st.success(f"💡 Predicted daily water consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_value:.2f} million litres**")
 
-
+# Plotting
 fig, ax = plt.subplots(figsize=(10, 6))
 
 # Plotting actual data
@@ -91,12 +91,3 @@ ax.legend(loc='upper left', fontsize=12)
 
 # Display the plot
 st.pyplot(fig)
-
-# --- Second chart: Seasonal Decomposition ---
-plt.subplot(1, 2, 2)
-decompose_result = sm.tsa.seasonal_decompose(train['value'], model='additive', period=1)  # Adjust period if needed
-decompose_result.plot()
-plt.title('Seasonal Decomposition of Water Consumption')
-
-plt.tight_layout()
-plt.show()
