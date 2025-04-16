@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from statsmodels.tsa.api import Holt
 
 # Load your dataset
 df = pd.read_csv("water_consumption.csv")
@@ -19,6 +20,7 @@ categories = ['All'] + sorted(df['sector'].unique())
 selected_state = st.selectbox("Select State", states)
 selected_category = st.selectbox("Select Sector", categories)
 
+# Filter data
 if selected_category == 'All':
     temp_df = df[df['state'] == selected_state]
     grouped_df = temp_df.groupby(['date'], as_index=False)['value'].sum()
@@ -26,7 +28,7 @@ if selected_category == 'All':
     filtered_df = grouped_df[['date', 'sector', 'value']]
 else:
     filtered_df = df[
-        (df['state'] == selected_state) &
+        (df['state'] == selected_state) & 
         (df['sector'] == selected_category)
     ][['date', 'sector', 'value']]
 
@@ -34,60 +36,53 @@ if filtered_df.empty:
     st.warning("No data available for this combination. Please choose another state or sector.")
     st.stop()
 
-# Sort by date and ensure numeric
+# Preprocess
 filtered_df = filtered_df.sort_values('date')
 filtered_df['date'] = pd.to_numeric(filtered_df['date'])
 
-# Fit Exponential Smoothing model
-@st.cache_resource
-def fit_expo_model(data):
-    model = ExponentialSmoothing(data['value'], trend='add', seasonal=None)
-    fit = model.fit()
-    return fit
+# Train-test split (e.g., last 5 years for testing)
+split_year = filtered_df['date'].max() - 5
+train = filtered_df[filtered_df['date'] <= split_year]
+test = filtered_df[filtered_df['date'] > split_year]
 
-fit = fit_expo_model(filtered_df)
+# Fit Holt’s Linear Trend Model
+fit = Holt(np.asarray(train['value'])).fit(smoothing_level=0.3, smoothing_slope=0.1)
+forecast_vals = fit.forecast(len(test))
 
-# Year slider
+# Merge forecast with test for prediction display
+y_hat_avg = test.copy()
+y_hat_avg['forecast'] = forecast_vals.values
+
+# Prediction slider
 selected_year = st.slider("Select a Year", min_value=min(years), max_value=2040, value=2025)
-
-# Predict
-prediction_index = selected_year
 last_year = filtered_df['date'].max()
 
+# Predict for selected year
 if selected_year <= last_year:
-    predicted_value = filtered_df[filtered_df['date'] == selected_year]['value'].values[0]
+    try:
+        predicted_value = filtered_df[filtered_df['date'] == selected_year]['value'].values[0]
+    except IndexError:
+        predicted_value = np.nan
 else:
-    forecast_years = selected_year - last_year
-    future_forecast = fit.forecast(forecast_years)
-    predicted_value = future_forecast.iloc[-1]
+    future_steps = selected_year - last_year
+    predicted_value = fit.forecast(future_steps).iloc[-1]
 
 st.success(f"💡 Predicted daily water consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_value:.2f} million litres**")
 
 # Plotting
-fig, ax = plt.subplots(figsize=(10, 6))
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.plot(train['date'], train['value'], label='Train', color='blue')
+ax.plot(test['date'], test['value'], label='Test', color='orange')
+ax.plot(y_hat_avg['date'], y_hat_avg['forecast'], label='Holt Forecast', color='green', linestyle='--')
 
-# Plotting actual data
-ax.plot(filtered_df['date'], filtered_df['value'], label='Actual Data', color='blue', marker='o', linestyle='-', linewidth=2)
+# Future prediction marker
+if selected_year > last_year:
+    ax.scatter(selected_year, predicted_value, color='red', s=100, label=f'{selected_year} Prediction')
 
-# Plotting the forecast data
-forecast_range = list(range(int(last_year) + 1, selected_year + 1))
-if forecast_range:
-    forecast_vals = fit.forecast(len(forecast_range))
-    ax.plot(forecast_range, forecast_vals, label='Forecast', color='red', linestyle='--', linewidth=2)
+ax.set_xlabel('Year')
+ax.set_ylabel('Water Consumption (million litres)')
+ax.set_title('Holt’s Linear Trend Forecast of Water Consumption')
+ax.legend(loc='best')
+ax.grid(True)
 
-# Mark the prediction point
-ax.scatter(selected_year, predicted_value, color='green', label='Prediction', s=100, zorder=5)
-
-# Adding title and labels
-ax.set_xlabel('Year', fontsize=12)
-ax.set_ylabel('Water Consumption (million litres)', fontsize=12)
-ax.set_title('Double Exponential Smoothing Forecast', fontsize=14)
-
-# Adding grid for better readability
-ax.grid(True, linestyle='--', alpha=0.7)
-
-# Adding a legend
-ax.legend(loc='upper left', fontsize=12)
-
-# Display the plot
 st.pyplot(fig)
