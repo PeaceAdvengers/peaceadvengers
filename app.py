@@ -98,7 +98,7 @@ ax1.plot(y_hat_avg['date'], y_hat_avg['forecast'], label='Holt Forecast', color=
 
 # Future predictions for Holt
 if selected_year > filtered_df['date'].max():
-    ax1.scatter(selected_year, predicted_value_holt, color='green', s=100, marker='o', label=f'Holt Prediction for {selected_year}')
+    ax1.scatter(selected_year, predicted_value_holt, color='green', s=100, marker='x', label=f'Holt Prediction for {selected_year}')
 
 # Set labels and title for Holt
 ax1.set_xlabel('Year')
