@@ -6,8 +6,8 @@ df = pd.read_csv('water_consumption.csv')
 
 #Creating train and test set 
 #Index 10392 marks the end of October 2013 
-train=df[0:10392] 
-test=df[10392:]
+train=df[0:300] 
+test=df[300:]
 #Aggregating the dataset at daily level
 df.Timestamp = pd.to_datetime(df.Datetime,format='%d-%m-%Y %H:%M') 
 df.index = df.Timestamp 
