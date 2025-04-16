@@ -41,14 +41,14 @@ filtered_df['date'] = pd.to_numeric(filtered_df['date'])
 # Fit Exponential Smoothing model
 @st.cache_resource
 # Double Exponential Smoothing Forecast
-model = ExponentialSmoothing(train['Count'], trend='add', seasonal=None)
+model = ExponentialSmoothing(train['value'], trend='add', seasonal=None)
 fit = model.fit()
 forecast = fit.forecast(1)
 
 fit = fit_expo_model(filtered_df)
 
 # Year slider
-selected_year = st.slider("Select a Year", min_value=min(years), max_value=2040, value=2025)
+selected_year = st.slider("Select Year", min_value=min(years), max_value=2040, value=2025)
 
 # Predict
 prediction_index = selected_year
