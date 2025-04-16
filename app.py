@@ -1,15 +1,17 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+from statsmodels.tsa.api import Holt
 
+# Load your dataset
 df = pd.read_csv("water_consumption.csv")
 
 # Streamlit layout
 st.title("Clean Water Consumption Predictor")
 st.write("### 💧Water: the only drink that falls from the sky for free.")
-st.write("##### Every drop counts! Curious how much water we’ll use? Let’s find out together! ")
+st.write("##### Every drop counts! Curious how much water we’ll use? Let’s find out together!")
 
 # Dropdown selections
 years = sorted(df['date'].unique())
@@ -18,82 +20,111 @@ categories = ['All'] + sorted(df['sector'].unique())
 
 selected_state = st.selectbox("Select State", states)
 selected_category = st.selectbox("Select Sector", categories)
+
+# Filter data
 if selected_category == 'All':
-    # Filter the selected state
     temp_df = df[df['state'] == selected_state]
-
-    # Group by date and state, then sum the value
-    grouped_df = temp_df.groupby(['date', 'state'], as_index=False)['value'].sum()
-
-    # Add a 'sector' column so the structure matches
+    grouped_df = temp_df.groupby(['date'], as_index=False)['value'].sum()
     grouped_df['sector'] = 'All'
-
-    # Reorder columns to match expected order
-    filtered_df = grouped_df[['date', 'state', 'sector', 'value']]
+    filtered_df = grouped_df[['date', 'sector', 'value']]
 else:
     filtered_df = df[
-        (df['state'] == selected_state) &
+        (df['state'] == selected_state) & 
         (df['sector'] == selected_category)
-    ]
-
+    ][['date', 'sector', 'value']]
 
 if filtered_df.empty:
     st.warning("No data available for this combination. Please choose another state or sector.")
     st.stop()
 
-st.write("Filtered Data", filtered_df)
+# Preprocess data (you can add your feature engineering steps here)
+filtered_df = filtered_df.sort_values('date')
+filtered_df['date'] = pd.to_numeric(filtered_df['date'])
 
-# Train Linear Regression model
-@st.cache_resource
-def train_model(dataframe, is_all):
-    if is_all:
-        X = dataframe[['date']]
-        y = dataframe['value']
-        model = LinearRegression().fit(X, y)
-        return model, dataframe, ['date']
-    else:
-        df_encoded = pd.get_dummies(dataframe, columns=['state', 'sector'], drop_first=True)
-        X = df_encoded[['date'] + [col for col in df_encoded.columns if col.startswith('state_') or col.startswith('sector_')]]
-        y = df_encoded['value']
-        model = LinearRegression().fit(X, y)
-        return model, df_encoded, X.columns.tolist()
+# Add features like 'year' or 'month' if applicable
+filtered_df['year'] = pd.to_datetime(filtered_df['date'], format='%Y').dt.year
+filtered_df['month'] = pd.to_datetime(filtered_df['date'], format='%Y').dt.month
 
+# Train-test split (e.g., last 5 years for testing)
+split_year = filtered_df['date'].max() - 5
+train = filtered_df[filtered_df['date'] <= split_year]
+test = filtered_df[filtered_df['date'] > split_year]
 
-is_all = selected_category == 'All'
-model, df_encoded, model_features = train_model(filtered_df, is_all)
+# Fit Holt’s Linear Trend Model
+fit = Holt(np.asarray(train['value'])).fit(smoothing_level=0.3, smoothing_slope=0.1)
+forecast_vals = fit.forecast(len(test))
 
-# Year slider
+# Merge forecast with test for prediction display
+y_hat_avg = test.copy()
+y_hat_avg['forecast'] = forecast_vals
+
+# Fit Linear Regression Model with multiple features
+X_train = train[['date', 'year', 'month']]  # Using date, year, and month as features
+y_train = train['value'].values
+
+linear_model = LinearRegression()
+linear_model.fit(X_train, y_train)
+
+# Linear Regression forecast for the test set
+X_test = test[['date', 'year', 'month']]  # Same features used for the test
+test['lr_forecast'] = linear_model.predict(X_test)
+
+# Prediction slider for selected year
 selected_year = st.slider("Select a Year", min_value=min(years), max_value=2040, value=2025)
+last_year = filtered_df['date'].max()
 
-# Prepare input for prediction
-input_dict = {'date': selected_year}
+# Predict future using Linear Regression
+X_future = np.array([[selected_year, selected_year, 1]])  # Future year prediction
+predicted_lr = linear_model.predict(X_future)[0]
 
-if not is_all:
-    for feature in model_features:
-        if feature.startswith("state_"):
-            input_dict[feature] = 1 if feature == f"state_{selected_state}" else 0
-        elif feature.startswith("sector_"):
-            input_dict[feature] = 1 if feature == f"sector_{selected_category}" else 0
+# Holt's prediction for the selected year
+if selected_year <= filtered_df['date'].max():
+    try:
+        predicted_value_holt = filtered_df[filtered_df['date'] == selected_year]['value'].values[0]
+    except IndexError:
+        predicted_value_holt = np.nan
+else:
+    future_steps = selected_year - filtered_df['date'].max()
+    predicted_value_holt = float(fit.forecast(future_steps)[-1])
 
-# Fill in any missing expected features
-for feature in model_features:
-    input_dict.setdefault(feature, 0)
+# Display both predictions
+st.success(f"🟢 Holt's forecast for {selected_year}: **{predicted_value_holt:.2f} million litres**")
 
-X_new = pd.DataFrame([input_dict])[model_features]
-predicted_proportion = model.predict(X_new)[0]
+# First plot for Holt's Forecast
+fig1, ax1 = plt.subplots(figsize=(12, 6))
+ax1.plot(train['date'], train['value'], label='Train Data', color='blue')
+ax1.plot(test['date'], test['value'], label='Test Data', color='orange')
+ax1.plot(y_hat_avg['date'], y_hat_avg['forecast'], label='Holt Forecast', color='green', linestyle='--')
 
+# Future predictions for Holt
+if selected_year > filtered_df['date'].max():
+    ax1.scatter(selected_year, predicted_value_holt, color='green', s=100, marker='o', label=f'Holt Prediction for {selected_year}')
 
-st.success(f"💡 Predicted daily water consumption for the year {selected_year}, state '{selected_state}', and sector '{selected_category}': **{predicted_proportion:.2f} million litres**")
+# Set labels and title for Holt
+ax1.set_xlabel('Year')
+ax1.set_ylabel('Water Consumption (million litres)')
+ax1.set_title('📈 Holt Forecast for Water Consumption')
+ax1.legend(loc='best')
+ax1.grid(True)
 
-# Plotting
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(df_encoded['date'], df_encoded['value'], color='blue', label='Actual Data')
-y_pred = model.predict(df_encoded[model_features])
-ax.plot(df_encoded['date'], y_pred, color='red', label='Regression Line')
-ax.scatter(selected_year, predicted_proportion, color='green', label='Prediction', s=100, zorder=5)
+# Display Holt's plot
+st.pyplot(fig1)
 
-ax.set_xlabel('Year')
-ax.set_ylabel('Water Consumption (million)')
-ax.set_title('Linear Regression: Water Consumption over Time')
-ax.legend()
-st.pyplot(fig)
+st.success(f"🔵 Linear Regression forecast for {selected_year}: **{predicted_lr:.2f} million litres**")
+# Second plot for Linear Regression Forecast
+fig2, ax2 = plt.subplots(figsize=(10, 6))
+
+# Plot actual data points
+ax2.scatter(filtered_df['date'], filtered_df['value'], color='blue', label='Actual Data')
+ax2.plot(filtered_df['date'], linear_model.predict(filtered_df[['date', 'year', 'month']]), color='red', label='Regression Line')
+ax2.scatter(selected_year, predicted_lr, color='green', label='Prediction', s=100, zorder=5)
+
+# Label the axes and add the title
+ax2.set_xlabel('Year')
+ax2.set_ylabel('Water Consumption (million litres)')
+ax2.set_title('Linear Regression Forecast for Water Consumption')
+ax2.legend(loc='best')
+ax2.grid(True)
+
+# Display Linear Regression plot
+st.pyplot(fig2)
