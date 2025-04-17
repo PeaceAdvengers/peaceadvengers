@@ -88,7 +88,7 @@ else:
     predicted_value_holt = float(fit.forecast(future_steps)[-1])
 
 # Display both predictions
-st.success(f"🟢 Holt's forecast for {selected_year}: **{predicted_value_holt:.2f} million litres**")
+st.success(f"🟢 Holt's forecast/ Double Exponential Smoothing forecast for {selected_year}: **{predicted_value_holt:.2f} million litres**")
 
 # First plot for Holt's Forecast
 fig1, ax1 = plt.subplots(figsize=(12, 6))
