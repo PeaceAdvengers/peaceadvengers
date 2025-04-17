@@ -101,7 +101,7 @@ else:
 
 
 # Display both predictions
-st.success(f"🟢 Holt's forecast for {selected_year}: **{predicted_value_holt:.2f} million litres**")
+st.success(f"🟢 Holt's forecast / Double Exponential Smoothing Forecast for {selected_year}: **{predicted_value_holt:.2f} million litres**")
 st.success(f"🔵 Linear Regression forecast for {selected_year}: **{predicted_lr:.2f} million litres**")
 
 
