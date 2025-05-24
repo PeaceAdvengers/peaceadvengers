@@ -18,12 +18,10 @@ st.write("##### Every drop counts! Curious how much water we’ll use? Let’s f
 # Dropdown selections
 years = sorted(df['date'].unique())
 states = sorted(df['state'].unique())
-categories = ['All'] + sorted(df['sector'].unique())
-
+categories = ['All'] + sorted(df['sector'].unique()
 
 selected_state = st.selectbox("Select State", states)
 selected_category = st.selectbox("Select Sector", categories)
-
 
 # Filter data
 if selected_category == 'All':
