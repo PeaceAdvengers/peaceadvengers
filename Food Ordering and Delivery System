@@ -1,0 +1,545 @@
+import tkinter as tk 
+from tkinter import * 
+import tkcalendar 
+from tkinter import Label 
+from PIL import Image, ImageTk 
+from tkinter import messagebox 
+from datetime import datetime, timedelta 
+def show_window(window): 
+page1_window.withdraw() 
+page3_window.withdraw() 
+window.deiconify() 
+def create_page1(): 
+window = tk.Toplevel(root) 
+window.title("Welcome to Restaurant Ayam Gepuk Pak Gembus Malaysia") 
+window.geometry(f"{screen_width}x{screen_height}+0+0") 
+window.configure(bg='#FFDAB9') 
+main_widgets = [] 
+def contact_us(): 
+contact_us_window = tk.Toplevel(window) 
+contact_us_window.title("Contact Us") 
+contact_us_window.geometry("400x400") 
+textCU = tk.Label(contact_us_window, text="Email Us at: \n 
+ayamgepukmalaysia@gmail.com", font=("Arial Black", 15), fg="red") 
+textCU.pack(padx=100, pady=7) 
+textCU.place(x=10, y=10) 
+def sign_up(): 
+signup_window = tk.Toplevel(window) 
+signup_window.title("Sign Up") 
+signup_window.geometry("400x400") 
+username_label = tk.Label(signup_window, text="Username:") 
+username_label.pack(pady=(20, 5)) 
+username_entry = tk.Entry(signup_window, width=30) 
+username_entry.pack(pady=5) 
+password_label = tk.Label(signup_window, text="Password:") 
+password_label.pack(pady=5) 
+password_entry = tk.Entry(signup_window, width=30, show="*") 
+password_entry.pack(pady=5) 
+def in_sign_up(): 
+username = username_entry.get() 
+password = password_entry.get() 
+if not username or not password: 
+messagebox.showwarning("Input Error", "Both fields are required!") 
+return 
+messagebox.showinfo("Success", "Sign up successfully! Enjoy your meal!") 
+sign_up_button = tk.Button(signup_window, text="Sign Up", command=in_sign_up) 
+sign_up_button.pack(pady=20) 
+def sign_out(): 
+messagebox.showinfo("Sign Out", "You have successfully signed out! Thank you for 
+using the application.") 
+image_input = r"C:\Users\asus\PycharmProjects\BSD2223SEM3\image\homepage 
+logo.png" 
+image = Image.open(image_input) 
+resized_image = image.resize((900, 700)) 
+logo_image = ImageTk.PhotoImage(resized_image) 
+window.logo_image = logo_image 
+logo_label = tk.Label(window, image=logo_image, bg="#FFDAB9") 
+logo_label.place(x=-150, y=100) 
+image_input2 = 
+r"C:\Users\asus\PycharmProjects\BSD2223SEM3\image\ayamGepukLogo.png" 
+image2 = Image.open(image_input2) 
+resized_image2 = image2.resize((130, 130)) 
+logo_image2 = ImageTk.PhotoImage(resized_image2) 
+window.logo_image2 = logo_image2 
+logo_label2 = tk.Label(window, image=logo_image2, bg="#FFDAB9") 
+logo_label2.place(x=700, y=100) 
+main_menu = tk.Menu(window) 
+window.config(menu=main_menu) 
+account_menu = tk.Menu(main_menu, tearoff=0) 
+account_menu.add_command(label="Sign up", command=sign_up) 
+account_menu.add_command(label="Sign out", command=sign_out) 
+account_menu.add_separator() 
+account_menu.add_command(label="Exit", command=window.quit) 
+main_menu.add_cascade(label="My Account", menu=account_menu) 
+title_label = tk.Label(window, text="Hungry? Have a bite now!", font=("Arial", 16, 
+"bold"), fg="yellow", bg="black") 
+title_label.place(x=600, y=250) 
+main_widgets.append(title_label) 
+text1 = tk.Label(window, bg="#FFDAB9", text="GET THE", font=("Arial Black", 25, 
+"bold")) 
+text1.place(x=600, y=300) 
+main_widgets.append(text1) 
+text2 = tk.Label(window,bg="#FFDAB9", text="FASTEST", font=("Arial Black", 25, 
+"bold")) 
+text2.place(x=600, y=350) 
+main_widgets.append(text2) 
+text3 = tk.Label(window,bg="#FFDAB9", text="FOOD DELIVERY!", font=("Arial 
+Black", 25, "bold")) 
+text3.place(x=600, y=400) 
+main_widgets.append(text3) 
+text4 = tk.Label(window,bg="#FFDAB9", text="Try your luck in the mini-game and save 
+RM5!", font=("Arial", 15, "bold")) 
+text4.place(x=600, y=450) 
+main_widgets.append(text4) 
+text5 = tk.Label(window,bg="#FFDAB9", text="' ORDER, WAIT, EAT '", font=("Arial 
+Black", 15, "italic bold"), fg="red") 
+text5.place(x=150, y=100) 
+main_widgets.append(text5) 
+contact_button = tk.Button(window, text="Contact Us",bg="#FF6347", font=("Arial", 12, 
+"bold"), width=15, command=contact_us) 
+contact_button.place(x=750, y=600) 
+main_widgets.append(contact_button) 
+order_now_button = tk.Button(window, text="Order Now",bg="#32CD32", font=("Arial", 
+12, "bold"), width=15, 
+command=lambda: show_window(page3_window)) 
+order_now_button.place(x=750, y=550) 
+main_widgets.append(order_now_button) 
+return window 
+def create_page3(): 
+window = tk.Toplevel(root) 
+window.title("Ayam Gepuk Pak Gembus - Delivery Checkout") 
+window.geometry(f"{screen_width}x{screen_height}+0+0") 
+window.configure(bg="#FFFFFF") 
+menu_data = { 
+"Ayam Gepuk Sets": [ 
+{"name": "Ayam Gepuk Set A", "price": "RM10.00","image": "image/setA.jpg", 
+"description": "Spicy fried chicken with rice."}, 
+{"name": "Ayam Gepuk Set B", "price": "RM12.00","image": "image/setB.jpg", 
+"description": "Fried chicken with sambal & rice."}, 
+{"name": "Ayam Gepuk Set C", "price": "RM15.00","image": "image/setC.jpg", 
+"description": "Chicken with veggies & rice."}, 
+{"name": "Ayam Gepuk Set D", "price": "RM18.00","image": "image/setD.jpg", 
+"description": "Chicken served with side dishes."}, 
+], 
+"Fish Sets": [ 
+{"name": "Talapia", "price": "RM15.00","image": "image/talapia.jpg", 
+"description": "Tilapia fish with vegetables."}, 
+{"name": "Ikan Keli", "price": "RM12.00","image": "image/keli.jpg", "description": 
+"Spicy fried catfish with sambal."}, 
+{"name": "Bakso", "price": "RM10.00","image": "image/bakso.jpg", "description": 
+"Meatball soup served with rice."}, 
+], 
+"Add Ons": [ 
+{"name": "Nasi Putih", "price": "RM3.00","image": "image/nasiputih.jpg", 
+"description": "Steamed white rice."}, 
+{"name": "Pedal", "price": "RM4.00","image": "image/pedal.jpg", "description": 
+"Inside chicken."}, 
+{"name": "Tempe", "price": "RM5.00","image": "image/tempe.jpg", "description": 
+"Fried tempeh, a crunchy snack."}, 
+{"name": "Tauhu", "price": "RM3.00","image": "image/tauhu.jpg", "description": 
+"Fried Tauhu."}, 
+{"name": "Sambal Cili", "price": "RM1.00","image": "image/sambalcili.jpg", 
+"description": "Spicy chili sambal."}, 
+{"name": "Sambal Kacang", "price": "RM1.00","image": "image/sambalkacang.jpg", 
+"description": "Peanut sambal."}, 
+], 
+"Drinks": [ 
+{"name": "Extra Joss Anggur Susu", "price": "RM6.00","image": 
+"image/extrajoss.jpg", "description": "Grape-flavored energy drink."}, 
+{"name": "Bali Blues", "price": "RM5.00","image": "image/baliblues.jpg", 
+"description": "Feel like you're in Bali."}, 
+{"name": "Lemon Tea", "price": "RM4.00","image": "image/lemontea.jpg", 
+"description": "Tea with a hint of lemon."}, 
+{"name": "Milo Ais", "price": "RM5.00","image": "image/milo.jpg", "description": 
+"Iced Milo, a chocolate malt drink."}, 
+], 
+} 
+item_quantities = {} 
+order_details = [] 
+delivery_mode = tk.StringVar(value="Now") 
+total_cost = 0.0 
+def add_to_cart(item, quantity_entry): 
+global total_cost 
+quantity = quantity_entry.get() 
+if not quantity.isdigit() or int(quantity) <= 0: 
+messagebox.showerror("Invalid Quantity", "Please enter a valid quantity.") 
+return 
+quantity = int(quantity) 
+price = float(item["price"].replace("RM", "").strip()) 
+item_found = False 
+for order in order_details: 
+if order["name"] == item["name"]: 
+order["quantity"] += quantity 
+order["price"] = price * order["quantity"] 
+item_found = True 
+break 
+if not item_found: 
+order_details.append({ 
+"name": item["name"], 
+"price": price * quantity, 
+"quantity": quantity, 
+}) 
+total_cost = sum(order["price"] for order in order_details) 
+update_order_list() 
+update_total_cost() 
+messagebox.showinfo("Item Added", f"{item['name']} (x{quantity}) has been added to 
+the cart.") 
+def remove_from_cart(item): 
+global total_cost 
+for order in order_details: 
+if order["name"] == item["name"]: 
+order_details.remove(order)  # Remove item from the cart 
+total_cost -= order["price"]  # Subtract its cost from the total 
+# Update the order list and total cost 
+update_order_list() 
+update_total_cost() 
+messagebox.showinfo("Item Removed", f"{item['name']} has been removed from 
+the cart.") 
+break 
+def update_order_list(): 
+order_list.delete(1.0, "end")  # Clear current list 
+order_list.tag_configure("order_font", font=("Times New Roman", 12)) 
+for order in order_details: 
+order_text = f"{order['name']} (x{order['quantity']}) - RM{order['price']:.2f}\n" 
+order_list.insert("end", order_text, "order_font") 
+def update_total_cost(): 
+global total_cost 
+"""Update the total cost label.""" 
+total_label.config(text=f"Total: RM{total_cost:.2f}") 
+# Functions 
+def create_menu_page(): 
+global menu_frame, order_list_frame, total_label 
+menu_frame = tk.Frame(window, bg="#FFF8DC") 
+menu_frame.pack(fill="both", expand=True) 
+canvas = tk.Canvas(menu_frame, bg="#FFF8DC") 
+canvas.pack(side="left", fill="both", expand=True) 
+scrollbar = tk.Scrollbar(menu_frame, orient="vertical", command=canvas.yview) 
+scrollbar.pack(side="right", fill="y") 
+canvas.config(yscrollcommand=scrollbar.set) 
+menu_items_frame = tk.Frame(canvas, bg="#FFF8DC") 
+canvas.create_window((0, 0), window=menu_items_frame, anchor="nw") 
+order_list_frame = tk.Frame(menu_frame, bg="#FFF8DC", bd=2, relief="groove") 
+order_list_frame.pack(fill="x", pady=10) 
+order_label = tk.Label(order_list_frame, width=15, text="Your Order", font=("Arial", 
+14, "bold"), bg="#FFD700") 
+order_label.pack(fill="x") 
+global order_list 
+order_list = tk.Text(order_list_frame, height=29, width=10, bg="white", font=("Arial", 
+12)) 
+order_list.pack(fill="both", padx=5, pady=5) 
+total_label = tk.Label(order_list_frame, text=f"Total: RM{total_cost:.2f}", 
+font=("Arial", 12, "bold"), 
+bg="#FFF8DC") 
+total_label.pack(fill="x", pady=5) 
+for category, items in menu_data.items(): 
+category_label = tk.Label(menu_items_frame, text=category, font=("Arial", 18, 
+"bold"), bg="#FFD700") 
+category_label.pack(fill="x", pady=10) 
+items_frame = tk.Frame(menu_items_frame, bg="#FFF8DC") 
+items_frame.pack(fill="x", pady=10) 
+for item in items: 
+add_menu_item(items_frame, item) 
+menu_items_frame.update_idletasks() 
+canvas.config(scrollregion=canvas.bbox("all")) 
+proceed_button = tk.Button(menu_frame, text="Proceed to Checkout", 
+command=show_time_date_page, bg="#32CD32", 
+fg="black", font=("Arial", 12, "bold"), width=20) 
+proceed_button.pack(pady=20) 
+def add_menu_item(frame, item): 
+item_frame = tk.Frame(frame, bg="#FFD700", bd=2, relief="groove") 
+item_frame.pack(side="left", padx=10) 
+image_path = item.get("image", "images/default.jpg") 
+try: 
+image = Image.open(image_path) 
+image = image.resize((180, 180)) 
+photo = ImageTk.PhotoImage(image) 
+except FileNotFoundError: 
+photo = None 
+print(f"Image not found: {image_path}") 
+if photo: 
+image_label = tk.Label(item_frame, image=photo, bg="#FFF8DC") 
+image_label.image = photo 
+image_label.pack(pady=5) 
+tk.Label(item_frame, text=item["name"], font=("Arial", 12, "bold"), bg="#FFD700", 
+fg="black").pack() 
+tk.Label(item_frame, text=f"Price: {item['price']}", font=("Arial", 12), bg="#FFD700", 
+fg="black").pack() 
+tk.Label(item_frame, text=item["description"], font=("Arial", 10), bg="#FFD700", 
+fg="black").pack() 
+tk.Label(item_frame, text="Qty:", font=("Arial", 12), bg="#FFD700").pack() 
+quantity_entry = tk.Entry(item_frame, width=5) 
+quantity_entry.pack() 
+item_quantities[item["name"]] = quantity_entry 
+add_button = tk.Button(item_frame, text="Add to Cart", bg="#32CD32", fg="white", 
+font=("Arial", 10, "bold"), 
+command=lambda: add_to_cart(item, quantity_entry)) 
+add_button.pack(pady=5) 
+remove_button = tk.Button(item_frame, text="Remove", bg="#FF6347", fg="white", 
+font=("Arial", 10, "bold"), 
+command=lambda: remove_from_cart(item)) 
+remove_button.pack(padx=5) 
+def show_time_date_page(): 
+global time_date_frame 
+menu_frame.pack_forget() 
+time_date_frame = tk.Frame(window, bg="#FFD700") 
+time_date_frame.pack(fill="both", expand=True) 
+tk.Label(time_date_frame, text="Delivery Option:", font=("Arial", 25, "bold"), 
+bg="#FFD700").pack(pady=60) 
+tk.Radiobutton(time_date_frame, text="Order Now", variable=delivery_mode, 
+value="Now", font=("Arial", 14), 
+bg="#FFD700").pack() 
+tk.Radiobutton(time_date_frame, text="Order Later", variable=delivery_mode, 
+value="Later", font=("Arial", 14), 
+bg="#FFD700").pack() 
+# Delivery Date and Time 
+date_label = tk.Label(time_date_frame, text="Delivery Date:", font=("Arial", 14, 
+"bold"), bg="#FFD700") 
+date_entry = tkcalendar.DateEntry(time_date_frame, width=15, background="darkblue", 
+foreground="white", 
+date_pattern="yyyy-mm-dd") 
+time_label = tk.Label(time_date_frame, text="Delivery Time (HH:MM):", 
+font=("Arial", 14, "bold"), bg="#FFD700") 
+time_entry = tk.Entry(time_date_frame, width=40) 
+# Delivery Address 
+tk.Label(time_date_frame, text="Delivery Address:", font=("Arial", 14, "bold"), 
+bg="#FFD700").pack(pady=5) 
+address_entry = tk.Entry(time_date_frame, width=40) 
+address_entry.pack(pady=10) 
+def update_delivery_option(): 
+if delivery_mode.get() == "Now": 
+date_label.pack_forget() 
+date_entry.pack_forget() 
+time_label.pack_forget() 
+time_entry.pack_forget() 
+else: 
+date_label.pack(pady=5) 
+date_entry.pack(pady=5) 
+time_label.pack(pady=5) 
+time_entry.pack(pady=5) 
+def checkout(): 
+if delivery_mode.get() == "Later": 
+delivery_date = date_entry.get() 
+delivery_time = time_entry.get() 
+if not delivery_time or len(delivery_time.split(":")) != 2: 
+messagebox.showerror("Invalid Time", "Please enter a valid delivery time 
+(HH:MM).") 
+return 
+else: 
+now = datetime.now() 
+delivery_date = now.strftime("%Y-%m-%d") 
+delivery_time = (now + timedelta(minutes=45)).strftime("%H:%M") 
+address = address_entry.get() 
+if not address: 
+messagebox.showwarning("Missing Address", "Please enter a delivery address.") 
+return 
+messagebox.showinfo("Delivery Time", f"Your order will be delivered in 
+approximately 45 minutes.") 
+delivery_mode.trace("w", lambda *args: update_delivery_option()) 
+update_delivery_option() 
+button_frame = tk.Frame(time_date_frame, bg="#FFD700") 
+button_frame.pack(side="bottom", pady=10) 
+tk.Button( 
+button_frame, 
+text="Payment", 
+command=payment_page, 
+bg="#32CD32", 
+fg="black", 
+font=("Arial", 12, "bold"), 
+width=15, 
+).pack(side="left", padx=20, pady=80) 
+tk.Button( 
+button_frame, 
+text="Back", 
+command=show_menu_page, 
+bg="#FF4500", 
+fg="black", 
+font=("Arial", 12, "bold"), 
+width=15, 
+).pack(side="left", padx=20, pady=100) 
+def show_menu_page(): 
+time_date_frame.pack_forget() 
+menu_frame.pack(fill="both", expand=True) 
+def payment_page(): 
+window.configure(bg="#FFD700") 
+global payment_frame, total_cost 
+menu_frame.pack_forget() 
+time_date_frame.pack_forget() 
+payment_frame = tk.Frame(window, bg="#FFD700") 
+tk.Label(payment_frame, text="Payment Option:", font=("Arial", 25, "bold"), 
+bg="#FFD700").pack(pady=60) 
+def clear(): 
+exit() 
+def minigame(): 
+from random import randint 
+from tkinter import messagebox 
+low = 0 
+high = 20 
+rand = randint(low, high) 
+attempts = [5] 
+voucher = f'GEPUK5' 
+print(rand) 
+minigame_window = tk.Toplevel(bg="#FFD700") 
+minigame_window.geometry("500x300") 
+minigame_window.title("GUESS THE CORRECT NUMBER AND WIN A 
+VOUCHER!") 
+minilabel = tk.Label(minigame_window, text=f"Guess a number between {low} and 
+{high} (inclusive)", 
+font=("Arial", 15), bg="#FFD700") 
+minilabel.pack(pady=10) 
+game = tk.Entry(minigame_window) 
+game.pack() 
+def check(): 
+if attempts[0] > 0: 
+game_input = game.get() 
+guess = int(game_input) 
+if guess < rand: 
+result_label.config(text=f"{guess} is too low, you have {attempts[0] - 1} tries 
+left.", 
+left", 
+bg="#FFD700") 
+elif guess > rand: 
+result_label.config(text=f"{guess} is too high, you have {attempts[0] - 1} tries 
+bg="#FFD700") 
+else: 
+messagebox.showinfo( 
+"CONGRATULATIONS YOU WON!", 
+f"{guess} IS CORRECT. OUR CURRENTLY ONGOING VOUCHER IS 
+{voucher}, BE SURE TO CHECKOUT NOW!") 
+minigame_window.destroy() 
+return 
+attempts[0] -= 1 
+if attempts[0] == 0: 
+messagebox.showinfo("GAME OVER", f"You've run out of attempts! The 
+correct number was {rand}.") 
+minigame_window.destroy() 
+else: 
+messagebox.showinfo("GAME OVER", f"You've run out of attempts! The 
+correct number was {rand}.") 
+minigame_window.destroy() 
+buttongame = tk.Button(minigame_window, text="Guess", command=check, 
+bg="#32CD32", 
+fg="black", font=("Arial", 12, "bold"), width=10) 
+buttongame.pack(pady=10) 
+result_label = tk.Label(minigame_window, text="", bg="#FFD700") 
+result_label.pack() 
+filemenu = Menu(window) 
+window.config(menu=filemenu) 
+minigame_menu = Menu(filemenu, tearoff=0) 
+filemenu.add_cascade(label="Minigame", menu=minigame_menu) 
+minigame_menu.add_command(label="Play", command=minigame) 
+minigame_menu.add_separator() 
+minigame_menu.add_command(label="Exit", command=clear) 
+# Cutlery 
+tk.Label(window, text="Would you like cutlery?", font=('arial', 16, 'bold'), 
+bg="#FFD700").pack( 
+pady=(70, 20)) 
+cut_var = tk.StringVar(value='None') 
+cutlery = tk.Frame(window, bg="#FFD700") 
+cutlery.pack() 
+tk.Radiobutton(cutlery,font=('arial', 14), text='Yes', variable=cut_var, value='Yes', 
+bg="#FFD700").pack() 
+tk.Radiobutton(cutlery,font=('arial', 14), text='No', variable=cut_var, value='No', 
+bg="#FFD700").pack() 
+# Voucher 
+label3 = tk.Label(window, text='INPUT VOUCHER', font=('arial', 16, 'bold'), 
+bg="#FFD700") 
+label3.pack(pady=(30, 10))  # Make sure to pack or place it if needed 
+entry = tk.Entry(window,font=('arial', 12), fg='black', bg='white', width=30,) 
+entry.pack(pady=(10, 20))  # Make sure to pack or place it if needed 
+def calculate_final_price(voucher_input): 
+global total_cost 
+discount_amount = 5.00 if voucher_input == "GEPUK5" else 0.00 
+return total_cost - discount_amount 
+def checkvoucher(): 
+global total_cost 
+voucher_input = entry.get() 
+final_price = calculate_final_price(voucher_input) 
+if voucher_input == "GEPUK5": 
+messagebox.showinfo("Voucher Applied", f"{voucher_input} is applied. Enjoy 
+RM5 off your order!") 
+else: 
+messagebox.showinfo("Invalid Input", f"{voucher_input} is invalid. Please enter a 
+valid voucher.") 
+final_price_label.config(text=f"Total Price: RM{final_price:.2f}") 
+submit_button = tk.Button(window, text="Submit", command=checkvoucher, 
+bg="#32CD32", 
+fg="black", font=("Arial", 12, "bold"), width=17) 
+submit_button.pack(pady=(5, 10)) 
+initial_voucher = entry.get() 
+final_price = calculate_final_price(initial_voucher) 
+final_price_frame = tk.Frame(window, bg="#FF6347", highlightbackground="black", 
+highlightthickness=2, padx=10, 
+pady=10) 
+final_price_frame.pack(pady=(45, 25)) 
+final_price_label = tk.Label(final_price_frame, text="Total Price: 
+RM{:.2f}".format(final_price), 
+font=('Arial', 12, "bold"), bg="#FF6347", fg="black") 
+final_price_label.pack() 
+# Payment method 
+def show_qr_code(): 
+qr_window = tk.Toplevel(window) 
+qr_window.title("QR Code Payment") 
+qr_window.geometry("600x600") 
+qr_window.configure(bg="#FFD700") 
+qr_label = tk.Label(qr_window, text="Scan the QR Code below:", font=('Arial', 14), 
+bg="#FFD700") 
+qr_label.pack(pady=10) 
+img = Image.open("image/AYAM GEPUK PAK GEMBUS.png") 
+resized_qr_image = img.resize((300, 400))  # Adjust size as needed 
+qr_image = ImageTk.PhotoImage(resized_qr_image) 
+qr_display = tk.Label(qr_window, image=qr_image) 
+qr_display.image = qr_image  # Keep a reference to the image 
+qr_display.pack(pady=10) 
+note = tk.Label(qr_window, text="NOTE : Please show the receipt to our driver 
+later", font=('Arial', 14), 
+bg="#FFD700") 
+note.pack(pady=10) 
+ok_button = tk.Button(qr_window, text="OK", command=qr_window.destroy, 
+bg="#32CD32", fg="black", 
+font=("Arial", 12, "bold"), width=8) 
+ok_button.pack(pady=10) 
+label3 = Label(window, text='Choose your preferred payment method:', font=('arial', 
+16), bg="#FFD700") 
+label3.pack(pady=(1, 10)) 
+pay_var = StringVar(value='None') 
+tk.Radiobutton(window,font=('arial', 14), text='QR', variable=pay_var, value='QR', 
+command=show_qr_code, bg="#FFD700").pack() 
+tk.Radiobutton(window,font=('arial', 14), text='COD', variable=pay_var, value='COD', 
+bg="#FFD700").pack() 
+def place_order(): 
+global total_cost 
+cutlery_choice = cut_var.get() 
+voucher_input = entry.get() 
+total_price = total_cost 
+final_price = total_price - (5 if voucher_input == "GEPUK5" else 0) 
+if voucher_input == "GEPUK5": 
+final_price -= 5 
+messagebox.showinfo( 
+"Your Order is successfully placed", 
+f"Thank you for your order!\nYour order will be delivered in approximately 45 
+minutes.") 
+root.quit() 
+# Quit button 
+tk.Button(window, text="Place Order", command=place_order, bg="#32CD32", 
+fg="black", font=("Arial", 12, "bold"), 
+width=20).pack(pady=10) 
+window.protocol("WM_DELETE_WINDOW", stop_event_loop) 
+def stop_event_loop(): 
+root.quit() 
+create_menu_page() 
+return window 
+def stop_event_loop(): 
+root.quit() 
+# Create main window 
+root = tk.Tk() 
+screen_width = root.winfo_screenwidth() 
+screen_height = root.winfo_screenheight() 
+root.title("Welcome to Restaurant Ayam Gepuk Pak Gembus Malaysia") 
+root.geometry(f"{screen_width}x{screen_height}+0+0") 
+root.configure(bg='#FFDAB9') 
+# Hide the main window until needed 
+root.withdraw() 
+page1_window = create_page1() 
+page3_window = create_page3() 
+show_window(page1_window) 
+root.mainloop()
